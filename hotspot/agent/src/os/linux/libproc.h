@@ -86,11 +86,14 @@ combination of ptrace and /proc calls.
 #endif
 
 // This C bool type must be int for compatibility with Linux calls and
-// it would be a mistake to equivalence it to C++ bool on many platforms
-
+// it would be a mistake to equivalence it to C++ bool on many platforms.
+// C23 makes bool/true/false keywords, so only provide the typedef for
+// pre-C23 C and for C++ (where none of the three names are macros).
+#if !defined(__cplusplus) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L)
 typedef int bool;
 #define true  1
 #define false 0
+#endif
 
 struct ps_prochandle;
 

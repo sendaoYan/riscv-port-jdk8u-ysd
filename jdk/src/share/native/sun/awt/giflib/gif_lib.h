@@ -47,12 +47,15 @@ extern "C" {
 #include <stddef.h>
 /** Begin JDK modifications to support building using old compilers**/
 //#include <stdbool.h>
+/* C23 makes bool/true/false keywords; only define them for pre-C23 C. */
+#if !defined(__cplusplus) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L)
 #ifdef bool
 #undef bool
 #endif
 typedef int bool;
 #define false 0
 #define true 1
+#endif
 /** End JDK modifications to support building using old compilers**/
 
 #define GIF_STAMP "GIFVER"          /* First chars in file - GIF stamp.  */

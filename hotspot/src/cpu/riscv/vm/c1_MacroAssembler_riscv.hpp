@@ -107,7 +107,11 @@ using MacroAssembler::null_check;
   void invalidate_registers(bool inv_r0, bool inv_r19, bool inv_r2, bool inv_r3, bool inv_r4, bool inv_r5) PRODUCT_RETURN;
 
   // This platform only uses signal-based null checks. The Label is not needed.
-  void null_check(Register r, Label *Lnull = NULL) { MacroAssembler::null_check(r); }
+  // No default argument here: the using-declaration above also makes
+  // MacroAssembler::null_check(Register, int offset = -1) a candidate, so a
+  // one-argument call would be ambiguous. Callers passing just a register get
+  // the (identical) MacroAssembler version.
+  void null_check(Register r, Label *Lnull) { MacroAssembler::null_check(r); }
 
   void inline_cache_check(Register receiver, Register iCache, Label &L);
 
