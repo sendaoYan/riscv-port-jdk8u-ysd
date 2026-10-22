@@ -37,6 +37,13 @@ const bool CCallingConventionRequiresIntsAsLongs = false;
 // patching. This is similar to what is done on aarch64.
 #define DEOPTIMIZE_WHEN_PATCHING
 
+// Fix the owner of a trampoline stub when the code is relocated from a
+// temporary buffer into the code cache.  On riscv64 C1 also emits
+// trampolines for far Java calls (the branch range is only 1M), and the
+// owner call site starts out as a self-referential jal(pc()) that must be
+// patched to the trampoline stub during CodeBuffer::relocate_code_to.
+#define USE_TRAMPOLINE_STUB_FIX_OWNER
+
 #define SUPPORTS_NATIVE_CX8
 
 #endif // CPU_RISCV_GLOBALDEFINITIONS_RISCV_HPP

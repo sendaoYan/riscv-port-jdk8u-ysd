@@ -527,6 +527,17 @@ void CallRelocation::fix_relocation_after_move(const CodeBuffer* src, CodeBuffer
 }
 
 
+#ifdef USE_TRAMPOLINE_STUB_FIX_OWNER
+void trampoline_stub_Relocation::fix_relocation_after_move(const CodeBuffer* src, CodeBuffer* dest) {
+  // Finalize owner destination only for the final nmethod copy, not for
+  // temporary buffer relocations that happen while the code is being
+  // generated (the trampoline stub may not exist yet at that point).
+  if (dest->blob() != NULL) return;
+  pd_fix_owner_after_move();
+}
+#endif
+
+
 //// pack/unpack methods
 
 void oop_Relocation::pack_data_to(CodeSection* dest) {

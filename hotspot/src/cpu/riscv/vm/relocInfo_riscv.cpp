@@ -92,6 +92,18 @@ void Relocation::pd_set_call_destination(address x) {
   assert(pd_call == x, "fail in reloc");
 }
 
+void trampoline_stub_Relocation::pd_fix_owner_after_move() {
+  NativeCall* call = nativeCall_at(owner());
+  assert(MacroAssembler::pd_call_destination(owner()) == owner(),
+         "destination should be empty");
+  address trampoline = addr();
+  address dest = nativeCallTrampolineStub_at(trampoline)->destination();
+  if (!Assembler::reachable_from_branch_at(owner(), dest)) {
+    dest = trampoline;
+  }
+  call->set_destination(dest);
+}
+
 address* Relocation::pd_address_in_code() {
   assert(NativeCall::is_load_pc_relative_at(addr()), "Not the expected instruction sequence!");
   return (address*)(MacroAssembler::target_addr_for_insn(addr()));

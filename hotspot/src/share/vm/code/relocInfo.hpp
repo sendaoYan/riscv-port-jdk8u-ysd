@@ -1166,6 +1166,11 @@ class runtime_call_Relocation : public CallRelocation {
 class trampoline_stub_Relocation : public Relocation {
   relocInfo::relocType type() { return relocInfo::trampoline_stub_type; }
 
+#ifdef USE_TRAMPOLINE_STUB_FIX_OWNER
+  void pd_fix_owner_after_move();
+  void fix_relocation_after_move(const CodeBuffer* src, CodeBuffer* dest);
+#endif
+
  public:
   static RelocationHolder spec(address static_call) {
     RelocationHolder rh = newHolder();
