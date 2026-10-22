@@ -53,9 +53,10 @@ jbyte* G1PostBarrierStub::byte_map_base_slow() {
 
 void CounterOverflowStub::emit_code(LIR_Assembler* ce) {
   __ bind(_entry);
-  Metadata *m = _method->as_constant_ptr()->as_metadata();
-  __ mov_metadata(t0, m);
-  ce->store_parameter(t0, 1);
+  // LIRGenerator::increment_invocation_counter() passes the method as a
+  // T_METADATA register (see c1_LIRGenerator.cpp), not as a constant, so use
+  // the register directly like aarch64/x86 do.
+  ce->store_parameter(_method->as_register(), 1);
   ce->store_parameter(_bci, 0);
   __ far_call(RuntimeAddress(Runtime1::entry_for(Runtime1::counter_overflow_id)));
   ce->add_call_info_here(_info);
