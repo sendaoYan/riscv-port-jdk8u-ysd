@@ -910,7 +910,6 @@ void TemplateTable::iaload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_INT) >> 2);
   __ shadd(x10, x11, x10, t0, 2);
   // __ access_load_at(T_INT, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ lwu(x10, Address(x10, arrayOopDesc::base_offset_in_bytes(T_INT)));
@@ -925,7 +924,6 @@ void TemplateTable::laload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_LONG) >> 3);
   __ shadd(x10, x11, x10, t0, 3);
   // __ access_load_at(T_LONG, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ ld(x10, Address(x10,  arrayOopDesc::base_offset_in_bytes(T_LONG)));
@@ -939,7 +937,6 @@ void TemplateTable::faload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_FLOAT) >> 2);
   __ shadd(x10, x11, x10, t0, 2);
   // __ access_load_at(T_FLOAT, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ flw(f10, Address(x10,  arrayOopDesc::base_offset_in_bytes(T_FLOAT)));
@@ -953,7 +950,6 @@ void TemplateTable::daload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_DOUBLE) >> 3);
   __ shadd(x10, x11, x10, t0, 3);
   // __ access_load_at(T_DOUBLE, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ fld(f10, Address(x10,  arrayOopDesc::base_offset_in_bytes(T_DOUBLE)));
@@ -980,7 +976,6 @@ void TemplateTable::baload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_BYTE) >> 0);
   __ shadd(x10, x11, x10, t0, 0);
   // __ access_load_at(T_BYTE, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ load_signed_byte(x10, Address(x10,  arrayOopDesc::base_offset_in_bytes(T_BYTE)));
@@ -994,7 +989,6 @@ void TemplateTable::caload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_CHAR) >> 1);
   __ shadd(x10, x11, x10, t0, 1);
   // __ access_load_at(T_CHAR, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ load_unsigned_short(x10, Address(x10,  arrayOopDesc::base_offset_in_bytes(T_CHAR)));
@@ -1012,7 +1006,6 @@ void TemplateTable::fast_icaload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11, kills t0
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_CHAR) >> 1); // addi, max imm is 2^11
   __ shadd(x10, x11, x10, t0, 1);
   // __ access_load_at(T_CHAR, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ load_unsigned_short(x10, Address(x10,  arrayOopDesc::base_offset_in_bytes(T_CHAR)));
@@ -1026,7 +1019,6 @@ void TemplateTable::saload()
   // x10: array
   // x11: index
   index_check(x10, x11); // leaves index in x11, kills t0
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_SHORT) >> 1);
   __ shadd(x10, x11, x10, t0, 1);
   // __ access_load_at(T_SHORT, IN_HEAP | IS_ARRAY, x10, Address(x10), noreg, noreg);
   __ load_signed_short(x10, Address(x10,  arrayOopDesc::base_offset_in_bytes(T_SHORT)));
@@ -1214,7 +1206,6 @@ void TemplateTable::iastore() {
   // x11: index
   // x13: array
   index_check(x13, x11); // prefer index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_INT) >> 2);
   __ shadd(t0, x11, x13, t0, 2);
   // __ access_store_at(T_INT, IN_HEAP | IS_ARRAY, Address(t0, 0), x10, noreg, noreg);
   __ sw(x10, Address(t0,
@@ -1229,7 +1220,6 @@ void TemplateTable::lastore() {
   // x11: index
   // x13: array
   index_check(x13, x11); // prefer index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_LONG) >> 3);
   __ shadd(t0, x11, x13, t0, 3);
   // __ access_store_at(T_LONG, IN_HEAP | IS_ARRAY, Address(t0, 0), x10, noreg, noreg);
   __ sd(x10, Address(t0,
@@ -1244,7 +1234,6 @@ void TemplateTable::fastore() {
   // x11:  index
   // x13:  array
   index_check(x13, x11); // prefer index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_FLOAT) >> 2);
   __ shadd(t0, x11, x13, t0, 2);
   // __ access_store_at(T_FLOAT, IN_HEAP | IS_ARRAY, Address(t0, 0), noreg /* ftos */, noreg, noreg);
   __ fsw(f10, Address(t0,
@@ -1259,7 +1248,6 @@ void TemplateTable::dastore() {
   // x11:  index
   // x13:  array
   index_check(x13, x11); // prefer index in x11
-  __ add(x11, x11, arrayOopDesc::base_offset_in_bytes(T_DOUBLE) >> 3);
   __ shadd(t0, x11, x13, t0, 3);
   // __ access_store_at(T_DOUBLE, IN_HEAP | IS_ARRAY, Address(t0, 0), noreg /* dtos */, noreg, noreg);
   __ fsd(f10, Address(t0,
