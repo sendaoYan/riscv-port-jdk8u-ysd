@@ -233,7 +233,12 @@ int VtableStub::pd_code_size_limit(bool is_vtable_stub) {
   if (TraceJumps || DebugVtables || CountCompiledCalls || VerifyOops) {
     return 1000;
   }
-  int size = is_vtable_stub ? 60 : 192; // Plain + safety
+  // The itable stub calls lookup_interface_method twice and also calls
+  // load_klass (which decodes a compressed klass and, when
+  // narrow_klass_base != 0, reloads xheapbase afterwards).  With
+  // UseCompressedClassPointers the whole stub easily exceeds 192 bytes,
+  // so reserve a bit more than aarch64's 192 for the itable case.
+  int size = is_vtable_stub ? 60 : 320; // Plain + safety
   return size;
 
 }
