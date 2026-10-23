@@ -5236,46 +5236,46 @@ void MacroAssembler::string_indexof_linearscan(Register haystack, Register needl
 void MacroAssembler::string_compare(Register str1, Register str2,
                                        Register cnt1, Register cnt2, Register result, Register tmp1)
 {
-  Label LENGTH_DIFF, DONE, SHORT_LOOP, SHORT_STRING, SHORT_LAST, TAIL, STUB,
-          DIFFERENCE, NEXT_WORD, SHORT_LOOP_TAIL, SHORT_LAST2, SHORT_LAST_INIT,
-          SHORT_LOOP_START, TAIL_CHECK, L;
-
-  const int STUB_THRESHOLD = 64 + 8;
+  Label LENGTH_DIFF, DONE, SHORT_LOOP, SHORT_STRING,
+        NEXT_WORD, DIFFERENCE, L;
 
   BLOCK_COMMENT("string_compare {");
 
-  // Compute the minimum of the string lengths and save the difference in result.
-  sub(result, cnt1, cnt2);
+  // Compute the minimum of the string lengths and save the difference in tmp1.
+  // cnt1 and cnt2 are the number of characters (each 16 bits) in the strings.
+  sub(tmp1, cnt1, cnt2);
   bgt(cnt1, cnt2, L);
   mv(cnt2, cnt1);
   bind(L);
 
-  // A very short string
+  // A very short string (fewer than wordSize / 2 == 4 characters).
   li(t0, wordSize / 2);
-  ble(cnt2, t0, SHORT_STRING);
+  blt(cnt2, t0, SHORT_STRING);
 
-  // Compare longwords
-  addi(cnt2, cnt2, -4);
-  add(str1, str1, cnt2);
-  sub(cnt1, zr, cnt2);
-  slli(cnt2, cnt2, 1);
-  add(str2, str2, cnt2);
-  sub(cnt2, zr, cnt2);
-  addi(cnt1, cnt1, 4);
+  // Check if the strings start at the same location.
+  beq(str1, str2, LENGTH_DIFF);
 
+  // Compare longwords (4 characters per 8-byte longword).
+  addi(cnt2, cnt2, -4);          // The last longword is a special case.
+  slli(t0, cnt2, 1);             // Convert the remaining count to bytes.
+  add(str1, str1, t0);           // Move both string pointers to the last longword.
+  add(str2, str2, t0);
+  sub(cnt2, zr, t0);             // Negate the byte offset for the loop.
+
+  // Loop, loading longwords and comparing them.
   bind(NEXT_WORD);
   add(t0, str1, cnt2);
   ld(result, Address(t0));
   add(t0, str2, cnt2);
   ld(cnt1, Address(t0));
   addi(cnt2, cnt2, wordSize);
-
-  xorr(t0, tmp1, cnt1);
-  beqz(t0, NEXT_WORD);
-  j(DIFFERENCE);
-  xorr(t0, tmp1, cnt1);
+  xorr(t0, result, cnt1);
   bnez(t0, DIFFERENCE);
+  bltz(cnt2, NEXT_WORD);
 
+  // Last longword.  In the case where length == 4 we compare the
+  // same longword twice, but that's still faster than another
+  // conditional branch.
   ld(result, Address(str1));
   ld(cnt1, Address(str2));
   xorr(t0, result, cnt1);
@@ -5284,13 +5284,36 @@ void MacroAssembler::string_compare(Register str1, Register str2,
   // Find the first different characters in the longwords and
   // compute their difference.
   bind(DIFFERENCE);
-  ctzc_bit(result, t0, -16); // count zero from lsb to msb
-  srl(tmp1, tmp1, result);
-  srl(cnt1, cnt1, result);
-  andi(tmp1, tmp1, 0xFFFF);
+  ctzc_bit(t1, t0, false, cnt2, str1); // count zero from lsb to msb
+  srl(result, result, t1);
+  srl(cnt1, cnt1, t1);
+  andi(result, result, 0xFFFF);
   andi(cnt1, cnt1, 0xFFFF);
-  sub(result, tmp1, cnt1);
+  sub(result, result, cnt1);
   j(DONE);
+
+  bind(SHORT_STRING);
+  // Is the minimum length zero?
+  beqz(cnt2, LENGTH_DIFF);
+
+  bind(SHORT_LOOP);
+  lhu(result, Address(str1));
+  addi(str1, str1, 2);
+  lhu(cnt1, Address(str2));
+  addi(str2, str2, 2);
+  sub(result, result, cnt1);
+  bnez(result, DONE);
+  addi(cnt2, cnt2, -1);
+  bnez(cnt2, SHORT_LOOP);
+
+  // Strings are equal up to min length.  Return the length difference.
+  bind(LENGTH_DIFF);
+  mv(result, tmp1);
+
+  // That's it.
+  bind(DONE);
+
+  BLOCK_COMMENT("} string_compare");
 }
 
 void MacroAssembler::arrays_equals(Register a1, Register a2, Register tmp3,

@@ -8848,9 +8848,7 @@ instruct string_compare(iRegP_R11 str1, iRegI_R12 cnt1, iRegP_R13 str2, iRegI_R1
 
   format %{ "String Compare $str1, $cnt1, $str2, $cnt2 -> $result\t#@string_compareU" %}
   ins_encode %{
-    // Count is in 8-bit bytes; non-Compact chars are 16 bits.
-    __ sraiw($cnt1$$Register, $cnt1$$Register, 1);
-    __ sraiw($cnt2$$Register, $cnt2$$Register, 1);
+    // The counts are already in characters (see LibraryCallKit::load_String_length).
     __ string_compare($str1$$Register, $str2$$Register,
                       $cnt1$$Register, $cnt2$$Register, $result$$Register,
                       $tmp1$$Register);
