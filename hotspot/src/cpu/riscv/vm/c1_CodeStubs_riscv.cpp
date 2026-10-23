@@ -361,7 +361,7 @@ void G1PreBarrierStub::emit_code(LIR_Assembler* ce) {
   if (do_load()) {
     ce->mem2reg(addr(), pre_val(), T_OBJECT, patch_code(), info(), false /*wide*/, false /*unaligned*/);
   }
-  __ beqz(pre_val_reg, _continuation);  //TODO-RISCV64 cbz -> beqz
+  __ beqz(pre_val_reg, _continuation, /* is_far */ true);  //TODO-RISCV64 cbz -> beqz
   ce->store_parameter(pre_val()->as_register(), 0);
   __ far_call(RuntimeAddress(Runtime1::entry_for(Runtime1::g1_pre_barrier_slow_id)));
   __ j(_continuation);  //TODO-RISCV64 b -> j
@@ -372,7 +372,7 @@ void G1PostBarrierStub::emit_code(LIR_Assembler* ce) {
   assert(addr()->is_register(), "Precondition.");
   assert(new_val()->is_register(), "Precondition.");
   Register new_val_reg = new_val()->as_register();
-  __ beqz(new_val_reg, _continuation);  //TODO-RISCV64 cbz -> beqz
+  __ beqz(new_val_reg, _continuation, /* is_far */ true);  //TODO-RISCV64 cbz -> beqz
   ce->store_parameter(addr()->as_pointer_register(), 0);
   __ far_call(RuntimeAddress(Runtime1::entry_for(Runtime1::g1_post_barrier_slow_id)));
   __ j(_continuation);  //TODO-RISCV64 b -> j
