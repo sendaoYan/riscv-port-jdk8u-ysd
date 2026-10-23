@@ -767,7 +767,6 @@ void LIRGenerator::do_MathIntrinsic(Intrinsic* x) {
   switch (x->id()) {
     case vmIntrinsics::_dexp: // fall through
     case vmIntrinsics::_dlog: // fall through
-    case vmIntrinsics::_dpow: // fall through
     case vmIntrinsics::_dcos: // fall through
     case vmIntrinsics::_dsin: // fall through
     case vmIntrinsics::_dtan: // fall through
@@ -799,6 +798,13 @@ void LIRGenerator::do_MathIntrinsic(Intrinsic* x) {
       }
 
       LIR_Opr result = call_runtime(x->argument_at(0), runtime_entry, x->type(), NULL);
+      set_result(x, result);
+      break;
+    }
+    case vmIntrinsics::_dpow: {
+      assert(x->number_of_arguments() == 2, "wrong type");
+      address runtime_entry = CAST_FROM_FN_PTR(address, SharedRuntime::dpow);
+      LIR_Opr result = call_runtime(x->argument_at(0), x->argument_at(1), runtime_entry, x->type(), NULL);
       set_result(x, result);
       break;
     }
