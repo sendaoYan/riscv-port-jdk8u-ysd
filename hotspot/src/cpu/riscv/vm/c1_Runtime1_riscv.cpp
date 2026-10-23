@@ -357,7 +357,7 @@ OopMapSet* Runtime1::generate_exception_throw(StubAssembler* sasm, address targe
   if (!has_argument) {
     call_offset = __ call_RT(noreg, noreg, target);
   } else {
-    call_offset = __ call_RT(noreg, noreg, target, t1);
+    call_offset = __ call_RT(noreg, noreg, target, t0);
   }
   OopMapSet* oop_maps = new OopMapSet();
   assert_cond(oop_maps != NULL);
