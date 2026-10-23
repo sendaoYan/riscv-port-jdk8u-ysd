@@ -2025,7 +2025,13 @@ void SharedRuntime::generate_deopt_blob() {
   // Load UnrollBlock* into x15
   __ mv(x15, x10);
 
-  __ lwu(xcpool, Address(x15, Deoptimization::UnrollBlock::unpack_kind_offset_in_bytes()));
+  // xcpool still holds the exec_mode chosen at the deopt blob entry
+  // (Unpack_deopt / Unpack_reexecute / Unpack_exception).  Do not
+  // reload it from UnrollBlock::_unpack_kind: on 8u that field is
+  // always 0 (it only carries the exec_mode from jdk9 on), so
+  // reloading it would silently downgrade Unpack_reexecute to
+  // Unpack_deopt and skip re-execution of the C1 bytecode that
+  // triggered the runtime patch.
   Label noException;
   __ li(t0, Deoptimization::Unpack_exception);
   __ bne(xcpool, t0, noException); // Was exception pending?
