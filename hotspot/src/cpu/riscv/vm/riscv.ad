@@ -1888,6 +1888,13 @@ encode %{
   enc_class riscv_enc_java_static_call(method meth) %{
     MacroAssembler _masm(&cbuf);
 
+    // Remember the address of the call instruction itself, *before* it is
+    // emitted.  trampoline_call returns pc() *after* the jal, so passing
+    // that return value as the static_stub relocation "mark" would record
+    // the wrong call-site address, and CompiledStaticCall::find_stub()
+    // would later fail to locate the stub ("stub not found"), crashing the
+    // first time a compiled IC is reset to interpreted.
+    address mark = __ pc();
     address addr = (address)$meth$$method;
     address call = NULL;
     assert_cond(addr != NULL);
@@ -1903,10 +1910,14 @@ encode %{
       ciEnv::current()->record_failure("CodeCache is full");
       return;
     }
- 
+
     if (_method) {
       // Emit stub for static call
-      address stub = CompiledStaticCall::emit_to_interp_stub(cbuf, call);
+      address stub = CompiledStaticCall::emit_to_interp_stub(cbuf, mark);
+      if (stub == NULL) {
+        ciEnv::current()->record_failure("CodeCache is full");
+        return;
+      }
     }
   %}
 
