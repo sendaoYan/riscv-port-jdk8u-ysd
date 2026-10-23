@@ -359,10 +359,11 @@ void InterpreterGenerator::generate_counter_incr(
 
     if (ProfileInterpreter && profile_method != NULL) {
       // Test to see if we should create a method data oop
-      // __ ld(t1, Address(xmethod, Method::method_counters_offset()));
-      // __ lwu(t1, Address(t1, in_bytes(MethodCounters::interpreter_profile_limit_offset())));
-      __ ld(t1, ExternalAddress((address)&InvocationCounter::InterpreterProfileLimit));  //TODO-RISCV64 maybe should use la?
-      __ lwu(t1, Address(t1));  //TODO-RISCV64 ??
+      // InterpreterProfileLimit is a static int; load its value with a
+      // single 32-bit unsigned load (matching aarch64's adrp+ldrw).  The
+      // previous ld+lwu pair treated the loaded value as a pointer and
+      // dereferenced it, crashing in non-tiered mode.
+      __ lwu(t1, ExternalAddress((address)&InvocationCounter::InterpreterProfileLimit));
       __ blt(x10, t1, *profile_method_continue);
 
       // if no method data exists, go to profile_method
@@ -370,10 +371,9 @@ void InterpreterGenerator::generate_counter_incr(
     }
 
     {
-      // __ ld(t1, Address(xmethod, Method::method_counters_offset()));
-      // __ lwu(t1, Address(t1, in_bytes(MethodCounters::interpreter_invocation_limit_offset())));
-      __ ld(t1, ExternalAddress((address)&InvocationCounter::InterpreterInvocationLimit));  //TODO-RISCV64 ??
-      __ lwu(t1, Address(t1));  //TODO-RISCV64 ??
+      // InterpreterInvocationLimit is a static int; load its value with a
+      // single 32-bit unsigned load (matching aarch64's adrp+ldrw).
+      __ lwu(t1, ExternalAddress((address)&InvocationCounter::InterpreterInvocationLimit));
       __ bltu(x10, t1, done);
       __ j(*overflow);
     }
