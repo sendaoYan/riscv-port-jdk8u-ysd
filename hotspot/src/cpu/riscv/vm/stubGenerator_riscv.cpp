@@ -1229,14 +1229,10 @@ class StubGenerator: public StubCodeGenerator {
       __ pop_reg(RegSet::of(d, count), sp);
       if (VerifyOops) {
         verify_oop_array(size, d, count, t2);
-        __ sub(count, count, 1); // make an inclusive end pointer
-        // __ lea(count, Address(d, count, Address::lsl(exact_log2(size))));  TODO-RISCV64, imitate from verify_oop_array in src/hotspot/cpu/aarch64/stubGenerator_aarch64.cpp
-        // __ slli(t1, count, exact_log2(size));
-        // __ add(t1, d, t1)
-        // __ la(count, Address(t1, 0));
-        __ shadd(count, count, d, t1, exact_log2(size));  //TODO-RISCV64, imitate from generate_generic_copy in src/hotspot/cpu/aarch64/stubGenerator_aarch64.cpp
-        gen_write_ref_array_post_barrier(d, count, t0);
       }
+      __ sub(count, count, 1); // make an inclusive end pointer
+      __ shadd(count, count, d, t1, exact_log2(size));
+      gen_write_ref_array_post_barrier(d, count, t0);
     }
 
     // bs->arraycopy_epilogue(_masm, decorators, is_oop, d, count, t0, RegSet());
@@ -1305,13 +1301,10 @@ class StubGenerator: public StubCodeGenerator {
       __ pop_reg(RegSet::of(d, count), sp);
       if (VerifyOops) {
         verify_oop_array(size, d, count, t2);
-        __ sub(count, count, 1); // make an inclusive end pointer
-        // __ lea(count, Address(d, count, Address::lsl(exact_log2(size))));  TODO-RISCV64, imitate from verify_oop_array in src/hotspot/cpu/aarch64/stubGenerator_aarch64.cpp
-        // __ slli(t1, count, exact_log2(size));
-        // __ la(count, Address(d, t1));
-        __ shadd(count, count, d, t1, exact_log2(size));  //TODO-RISCV64, imitate from generate_generic_copy in src/hotspot/cpu/aarch64/stubGenerator_aarch64.cpp
-        gen_write_ref_array_post_barrier(d, count, t0);
       }
+      __ sub(count, count, 1); // make an inclusive end pointer
+      __ shadd(count, count, d, t1, exact_log2(size));
+      gen_write_ref_array_post_barrier(d, count, t0);
     }
     // bs->arraycopy_epilogue(_masm, decorators, is_oop, d, count, t0, RegSet());
     __ leave();
