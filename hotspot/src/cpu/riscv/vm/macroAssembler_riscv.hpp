@@ -911,9 +911,8 @@ public:
                      Register result, Register cnt1,
                      int elem_size);
 
-  void string_equals(Register r1, Register r2,
-                     Register result, Register cnt1,
-                     int elem_size);
+  void string_equals(Register str1, Register str2,
+                     Register cnt, Register result);
 
   // refer to conditional_branches and float_conditional_branches
   static const int bool_test_bits = 3;

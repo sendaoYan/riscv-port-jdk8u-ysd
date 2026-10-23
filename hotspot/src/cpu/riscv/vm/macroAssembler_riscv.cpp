@@ -5394,95 +5394,79 @@ void MacroAssembler::arrays_equals(Register a1, Register a2, Register tmp3,
 }
 
 // Compare Strings
+//
+// For Strings we're passed the address of the first characters in str1
+// and str2 and the length in cnt.  The length is the number of
+// characters, each 16 bits wide (jdk8u has no compact strings).  This
+// matches LibraryCallKit::load_String_length, which reads the String
+// 'count' field.  Strings of fewer than 4 characters are compared
+// character by character; longer strings are compared 8 bytes (4
+// characters) at a time.
 
-// For Strings we're passed the address of the first characters in a1
-// and a2 and the length in cnt1.
-// elem_size is the element size in bytes: either 1 or 2.
-// There are two implementations.  For arrays >= 8 bytes, all
-// comparisons (including the final one, which may overlap) are
-// performed 8 bytes at a time.  For strings < 8 bytes, we compare a
-// halfword, then a short, and then a byte.
-
-void MacroAssembler::string_equals(Register a1, Register a2,
-                                      Register result, Register cnt1, int elem_size)
+void MacroAssembler::string_equals(Register str1, Register str2,
+                                   Register cnt, Register result)
 {
-  Label SAME, DONE, SHORT, NEXT_WORD;
+  Label SAME_CHARS, DONE, SHORT_LOOP, SHORT_STRING, NEXT_WORD;
   Register tmp1 = t0;
   Register tmp2 = t1;
 
-  assert(elem_size == 1 || elem_size == 2, "must be 2 or 1 byte");
-  assert_different_registers(a1, a2, result, cnt1, t0, t1);
+  assert_different_registers(str1, str2, cnt, result, t0, t1);
 
   BLOCK_COMMENT("string_equals {");
 
+  // Start by assuming that the strings are not equal.
   mv(result, false);
 
-  // Check for short strings, i.e. smaller than wordSize.
-  sub(cnt1, cnt1, wordSize);
-  bltz(cnt1, SHORT);
+  // A very short string (fewer than 4 characters).
+  li(t0, 4);
+  blt(cnt, t0, SHORT_STRING);
 
-  // Main 8 byte comparison loop.
-  bind(NEXT_WORD); {
-    ld(tmp1, Address(a1, 0));
-    add(a1, a1, wordSize);
-    ld(tmp2, Address(a2, 0));
-    add(a2, a2, wordSize);
-    sub(cnt1, cnt1, wordSize);
-    bne(tmp1, tmp2, DONE);
-  } bgtz(cnt1, NEXT_WORD);
+  // Check if the strings start at the same location.
+  beq(str1, str2, SAME_CHARS);
+
+  // Compare longwords (4 characters per 8-byte longword).
+  addi(cnt, cnt, -4);           // The last longword is a special case.
+  slli(t0, cnt, 1);             // Convert the remaining count to bytes.
+  add(str1, str1, t0);          // Move both string pointers to the last
+  add(str2, str2, t0);          //   longword.
+  sub(cnt, zr, t0);             // Negate the byte offset for the loop.
+
+  // Loop, loading longwords and comparing them.
+  bind(NEXT_WORD);
+  add(t0, str1, cnt);
+  ld(tmp1, Address(t0));
+  add(t1, str2, cnt);
+  ld(tmp2, Address(t1));
+  addi(cnt, cnt, wordSize);
+  xorr(t0, tmp1, tmp2);
+  bnez(t0, DONE);
+  bltz(cnt, NEXT_WORD);
 
   // Last longword.  In the case where length == 4 we compare the
   // same longword twice, but that's still faster than another
   // conditional branch.
-  // cnt1 could be 0, -1, -2, -3, -4 for chars; -4 only happens when
-  // length == 4.
-  add(tmp1, a1, cnt1);
-  ld(tmp1, Address(tmp1, 0));
-  add(tmp2, a2, cnt1);
-  ld(tmp2, Address(tmp2, 0));
-  bne(tmp1, tmp2, DONE);
-  j(SAME);
+  ld(tmp1, Address(str1));
+  ld(tmp2, Address(str2));
+  xorr(t0, tmp1, tmp2);
+  beqz(t0, SAME_CHARS);
+  j(DONE);
 
-  bind(SHORT);
-  Label TAIL03, TAIL01;
+  bind(SHORT_STRING);
+  // Is the length zero?
+  beqz(cnt, SAME_CHARS);
 
-  // 0-7 bytes left.
-  andi(t0, cnt1, 4);
-  beqz(t0, TAIL03);
-  {
-    lwu(tmp1, Address(a1, 0));
-    add(a1, a1, 4);
-    lwu(tmp2, Address(a2, 0));
-    add(a2, a2, 4);
-    bne(tmp1, tmp2, DONE);
-  }
+  bind(SHORT_LOOP);
+  lhu(tmp1, Address(str1));
+  addi(str1, str1, 2);
+  lhu(tmp2, Address(str2));
+  addi(str2, str2, 2);
+  sub(tmp1, tmp1, tmp2);
+  bnez(tmp1, DONE);
+  addi(cnt, cnt, -1);
+  bnez(cnt, SHORT_LOOP);
 
-  bind(TAIL03);
-  // 0-3 bytes left.
-  andi(t0, cnt1, 2);
-  beqz(t0, TAIL01);
-  {
-    lhu(tmp1, Address(a1, 0));
-    add(a1, a1, 2);
-    lhu(tmp2, Address(a2, 0));
-    add(a2, a2, 2);
-    bne(tmp1, tmp2, DONE);
-  }
-
-  bind(TAIL01);
-  if (elem_size == 1) { // Only needed when comparing 1-byte elements
-    // 0-1 bytes left.
-    andi(t0, cnt1, 1);
-    beqz(t0, SAME);
-    {
-      lbu(tmp1, a1, 0);
-      lbu(tmp2, a2, 0);
-      bne(tmp1, tmp2, DONE);
-    }
-  }
-
-  // Arrays are equal.
-  bind(SAME);
+  // Strings are equal.
+  bind(SAME_CHARS);
   mv(result, true);
 
   // That's it.
