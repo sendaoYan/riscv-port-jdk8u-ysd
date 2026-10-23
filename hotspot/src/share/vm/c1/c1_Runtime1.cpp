@@ -711,6 +711,7 @@ JRT_ENTRY(void, Runtime1::deoptimize(JavaThread* thread))
 JRT_END
 
 
+#ifndef DEOPTIMIZE_WHEN_PATCHING
 static Klass* resolve_field_return_klass(methodHandle caller, int bci, TRAPS) {
   Bytecode_field field_access(caller, bci);
   // This can be static or non-static field access
@@ -722,6 +723,7 @@ static Klass* resolve_field_return_klass(methodHandle caller, int bci, TRAPS) {
   LinkResolver::resolve_field_access(result, constants, field_access.index(), Bytecodes::java_code(code), CHECK_NULL);
   return result.field_holder();
 }
+#endif // !DEOPTIMIZE_WHEN_PATCHING
 
 
 //
@@ -797,6 +799,8 @@ static Klass* resolve_field_return_klass(methodHandle caller, int bci, TRAPS) {
 // executing.
 //
 //
+
+#ifndef DEOPTIMIZE_WHEN_PATCHING
 
 JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_id ))
   NOT_PRODUCT(_patch_code_slowcase_cnt++;)
@@ -1185,6 +1189,40 @@ JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_i
     Universe::heap()->register_nmethod(nm);
   }
 JRT_END
+
+#else // DEOPTIMIZE_WHEN_PATCHING
+
+// On RISC-V, the instruction cache is not coherent with data writes, and
+// self-modifying code requires an explicit fence.i.  We cannot safely
+// play the copy-the-patch-body-back-into-the-nmethod game that the x86
+// implementation above relies on, so when C1 generated code needs to be
+// patched we simply deoptimize the frame.  The interpreter resolves and
+// initializes the klass/mirror/field, and the method is recompiled with
+// the resolved reference on the next invocation.
+JRT_ENTRY(void, Runtime1::patch_code(JavaThread* thread, Runtime1::StubID stub_id ))
+  NOT_PRODUCT(_patch_code_slowcase_cnt++;)
+
+  if (TracePatching) {
+    tty->print_cr("Deoptimizing because patch is needed");
+  }
+
+  RegisterMap reg_map(thread, false);
+  frame runtime_frame = thread->last_frame();
+  frame caller_frame = runtime_frame.sender(&reg_map);
+
+  // It's possible the nmethod was invalidated in the last safepoint,
+  // but if it's still alive then make it not_entrant.
+  nmethod* nm = CodeCache::find_nmethod(caller_frame.pc());
+  if (nm != NULL) {
+    nm->make_not_entrant();
+  }
+
+  Deoptimization::deoptimize_frame(thread, caller_frame.id());
+
+  // Return to the now deoptimized frame.
+JRT_END
+
+#endif // DEOPTIMIZE_WHEN_PATCHING
 
 //
 // Entry point for compiled code. We want to patch a nmethod.
