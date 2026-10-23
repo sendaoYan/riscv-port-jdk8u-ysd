@@ -152,7 +152,10 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_float() {
   //   pass_int();
   // }
   if (_num_fp_args < Argument::n_float_register_parameters_c) {
-    __ flw(as_FloatRegister(_num_fp_args++), src);
+    // Float arguments are passed in fa0..fa7 (f10..f17), which are the
+    // entries of g_FPArgReg.  Do not use as_FloatRegister(_num_fp_args),
+    // which would put the argument in f0..f7 instead of fa0..fa7.
+    __ flw(g_FPArgReg[_num_fp_args++], src);
   } else {
     __ lwu(x10, src);
     __ sw(x10, Address(to(), _stack_offset));
@@ -173,7 +176,10 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_double() {
   //   pass_long();
   // }
   if (_num_fp_args < Argument::n_float_register_parameters_c) {
-    __ fld(as_FloatRegister(_num_fp_args++), src);
+    // Double arguments are passed in fa0..fa7 (f10..f17), which are the
+    // entries of g_FPArgReg.  Do not use as_FloatRegister(_num_fp_args),
+    // which would put the argument in f0..f7 instead of fa0..fa7.
+    __ fld(g_FPArgReg[_num_fp_args++], src);
   } else {
     __ ld(x10, src);
     __ sd(x10, Address(to(), _stack_offset));
