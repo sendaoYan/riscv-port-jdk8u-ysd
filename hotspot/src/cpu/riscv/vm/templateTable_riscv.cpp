@@ -3794,7 +3794,7 @@ void TemplateTable::_new() {
     __ bind(allocate_shared);
 
     __ eden_allocate(x10, x13, 0, x28, slow_case);
-    __ incr_allocated_bytes(x10, x13, 0, x28);
+    __ incr_allocated_bytes(xthread, x13, 0, x28);
   }
 
   if (UseTLAB || Universe::heap()->supports_inline_contig_alloc()) {
