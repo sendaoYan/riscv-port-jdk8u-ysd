@@ -59,6 +59,14 @@ public class DockerTestUtils {
     public static final String JDK_UNDER_TEST =
         System.getProperty("jdk.test.docker.jdk", Utils.TEST_JDK);
 
+    // Path to a sysroot directory on the docker host. When a JDK built for a
+    // foreign architecture (e.g. riscv64) runs under qemu user-mode emulation
+    // inside an x86 container, the emulated binaries need the foreign dynamic
+    // loader/libraries. Bind-mount this sysroot into the container at /sysroot
+    // and set QEMU_LD_PREFIX accordingly.
+    public static final String SYSROOT =
+        System.getProperty("jdk.test.docker.sysroot");
+
 
     /**
      * Optimized check of whether the docker engine is available in a given
@@ -191,6 +199,12 @@ public class DockerTestUtils {
             cmd.add("--rm");
 
         cmd.addAll(opts.dockerOpts);
+        if (SYSROOT != null) {
+            cmd.add("--volume");
+            cmd.add(SYSROOT + ":/sysroot");
+            cmd.add("-e");
+            cmd.add("QEMU_LD_PREFIX=/sysroot");
+        }
         cmd.add(opts.imageNameAndTag);
         cmd.add(opts.command);
 
