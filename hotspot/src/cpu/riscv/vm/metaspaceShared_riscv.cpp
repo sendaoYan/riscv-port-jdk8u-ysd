@@ -91,16 +91,16 @@ void MetaspaceShared::generate_vtable_methods(void** vtbl_list,
 
   __ bind(common_code);
 
-  Register tmp0 = x7, tmp1 = x28;       // AAPCS64 temporary registers
+  Register tmp0 = x7, tmp1 = x28, tmp2 = x6;  // RISCV64 temporary registers
   __ enter();
-  __ srli(tmp0, t0, 8);            // isolate vtable identifier.
+  __ srli(tmp0, t0, 8);            // isolate vtable identifier (i).
   __ mv(tmp1, (address)vtbl_list);      // address of list of vtable pointers.
-  // __ ld(tmp1, Address(tmp1, tmp0, Address::lsl(LogBytesPerWord))); // get correct vtable pointer.
-  __ shadd(tmp1, tmp0, tmp1, tmp1, LogBytesPerWord);  //imitate from 'void TemplateTable::fast_binaryswitch()'
-  __ lwu(tmp1, Address(tmp1, 0));
+  __ shadd(tmp1, tmp0, tmp1, tmp2, LogBytesPerWord);  // tmp1 = vtbl_list + i * LogBytesPerWord
+  __ ld(tmp1, Address(tmp1, 0));   // tmp1 = vtbl_list[i], the correct vtable pointer.
   __ sd(tmp1, Address(c_rarg0));        // update vtable pointer in obj.
-  __ add(t0, tmp1, LogBytesPerWord); // address of real method pointer.  //TODO RISCV64, not sure
-  __ ld(t0, Address(t0)); // get real method pointer.
+  __ andi(t0, t0, 0xff);           // isolate method index (j) from low 8 bits.
+  __ shadd(t0, t0, tmp1, tmp2, LogBytesPerWord);  // t0 = vtable + j * LogBytesPerWord
+  __ ld(t0, Address(t0));          // get real method pointer.
   __ jalr(t0);                     // jump to the real method.
   __ leave();
   __ ret();
