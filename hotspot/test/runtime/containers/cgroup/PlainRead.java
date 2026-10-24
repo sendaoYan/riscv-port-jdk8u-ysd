@@ -73,9 +73,6 @@ public class PlainRead {
         if (wb.isContainerized()) {
             System.out.println("Inside a cgroup, testing...");
             isContainer(output);
-        } else {
-            System.out.println("Not in a cgroup, testing...");
-            isNotContainer(output);
         }
     }
 }
