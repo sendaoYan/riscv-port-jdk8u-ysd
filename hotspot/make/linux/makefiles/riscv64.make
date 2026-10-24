@@ -38,3 +38,8 @@ CFLAGS += -DVM_LITTLE_ENDIAN
 CFLAGS += -D_LP64=1
 
 OPT_CFLAGS/compactingPermGenGen.o = -O1
+
+# GCC 16's IPA-CP clones the variadic LineBuffer::append into constprop.0/.1,
+# which on riscv64 corrupts the receiver (a0) and crashes GC phase-time logging
+# with SIGSEGV. Disable IPA-CP cloning for this file.
+OPT_CFLAGS/g1GCPhaseTimes.o += -fno-ipa-cp-clone
