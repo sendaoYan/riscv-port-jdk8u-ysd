@@ -44,7 +44,11 @@ OS=`uname -s`
 echo "Testing on " $OS
 case "$OS" in
   Linux)
-    cc_cmd=`which gcc`
+    if [ "x${CC}" != "x" ]; then
+        cc_cmd=${CC}
+    else
+        cc_cmd=`which gcc`
+    fi
     if [ "x$cc_cmd" = "x" ]; then
         echo "WARNING: gcc not found. Cannot execute test." 2>&1
         exit 0;
