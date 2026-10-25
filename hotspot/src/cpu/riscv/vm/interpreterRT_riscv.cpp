@@ -56,35 +56,35 @@ void InterpreterRuntime::SignatureHandlerGenerator::pass_int() {
   // }
   switch (_num_int_args) {
   case 0:
-    __ ld(c_rarg1, src);
+    __ lw(c_rarg1, src);
     _num_int_args++;
     break;
   case 1:
-    __ ld(c_rarg2, src);
+    __ lw(c_rarg2, src);
     _num_int_args++;
     break;
   case 2:
-    __ ld(c_rarg3, src);
+    __ lw(c_rarg3, src);
     _num_int_args++;
     break;
   case 3:
-    __ ld(c_rarg4, src);
+    __ lw(c_rarg4, src);
     _num_int_args++;
     break;
   case 4:
-    __ ld(c_rarg5, src);
+    __ lw(c_rarg5, src);
     _num_int_args++;
     break;
   case 5:
-    __ ld(c_rarg6, src);
+    __ lw(c_rarg6, src);
     _num_int_args++;
     break;
   case 6:
-    __ ld(c_rarg7, src);
+    __ lw(c_rarg7, src);
     _num_int_args++;
     break;
   default:
-    __ ld(x10, src);
+    __ lw(x10, src);
     __ sd(x10, Address(to(), _stack_offset));
     _stack_offset += wordSize;
     _num_int_args++;
