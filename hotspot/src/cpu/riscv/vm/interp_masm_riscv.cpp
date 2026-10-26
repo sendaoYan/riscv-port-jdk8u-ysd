@@ -1802,7 +1802,7 @@ void InterpreterMacroAssembler::profile_return_type(Register mdp, Register ret, 
     test_method_data_pointer(mdp, profile_continue);
 
     if (MethodData::profile_return_jsr292_only()) {
-      assert(Method::intrinsic_id_size_in_bytes() == 2, "assuming Method::_intrinsic_id is u2");
+      assert(Method::intrinsic_id_size_in_bytes() == 1, "assuming Method::_intrinsic_id is u1");
 
       // If we don't profile all invoke bytecodes we must make sure
       // it's a bytecode we indeed profile. We can't go back to the
@@ -1816,7 +1816,7 @@ void InterpreterMacroAssembler::profile_return_type(Register mdp, Register ret, 
       li(tmp, (u1)Bytecodes::_invokehandle);
       beq(t0, tmp, do_profile);
       get_method(tmp);
-      lhu(t0, Address(tmp, Method::intrinsic_id_offset_in_bytes()));
+      lbu(t0, Address(tmp, Method::intrinsic_id_offset_in_bytes()));
       li(t1, vmIntrinsics::_compiledLambdaForm);
       bne(t0, t1, profile_continue);
       bind(do_profile);

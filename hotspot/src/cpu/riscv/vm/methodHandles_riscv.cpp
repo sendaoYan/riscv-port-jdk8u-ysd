@@ -193,11 +193,11 @@ address MethodHandles::generate_method_handle_interpreter_entry(MacroAssembler* 
   address entry_point = __ pc();
 
   if (VerifyMethodHandles) {
-    assert(Method::intrinsic_id_size_in_bytes() == 2, "assuming Method::_intrinsic_id is u2");
+    assert(Method::intrinsic_id_size_in_bytes() == 1, "assuming Method::_intrinsic_id is u1");
 
     Label L;
     BLOCK_COMMENT("verify_intrinsic_id {");
-    __ lhu(t0, Address(xmethod, Method::intrinsic_id_offset_in_bytes()));
+    __ lbu(t0, Address(xmethod, Method::intrinsic_id_offset_in_bytes()));
     __ mv(t1, (int) iid);
     __ beq(t0, t1, L);
     if (iid == vmIntrinsics::_linkToVirtual ||
