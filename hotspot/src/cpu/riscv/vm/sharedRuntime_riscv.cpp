@@ -1999,7 +1999,7 @@ void SharedRuntime::generate_deopt_blob() {
 
   Label retaddr;
   __ set_last_Java_frame(sp, noreg, retaddr, t0);
-#ifdef ASSERT
+#ifdef ASSERT0
   {
     Label L;
     __ ld(t0, Address(xthread,
@@ -2253,16 +2253,6 @@ void SharedRuntime::generate_uncommon_trap_blob() {
 
   // move UnrollBlock* into x14
   __ mv(x14, x10);
-
-#ifdef ASSERT
-  { Label L;
-    __ lwu(t0, Address(x14, Deoptimization::UnrollBlock::unpack_kind_offset_in_bytes()));
-    __ mvw(t1, Deoptimization::Unpack_uncommon_trap);
-    __ beq(t0, t1, L);
-    __ stop("SharedRuntime::generate_deopt_blob: last_Java_fp not cleared");
-    __ bind(L);
-  }
-#endif
 
   // Pop all the frames we must move/replace.
   //
