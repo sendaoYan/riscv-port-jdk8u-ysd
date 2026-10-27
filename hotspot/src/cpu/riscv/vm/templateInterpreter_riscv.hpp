@@ -35,6 +35,6 @@
   // if too small.
   // Run with +PrintInterpreter to get the VM to print out the size.
   // Max size with JVMTI
-  const static int InterpreterCodeSize = 256 * 1024;
+  const static int InterpreterCodeSize = 512 * 1024;
 
 #endif // CPU_RISCV_VM_TEMPLATEINTERPRETER_RISCV_HPP
