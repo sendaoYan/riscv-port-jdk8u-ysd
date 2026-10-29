@@ -64,7 +64,6 @@ public class OomWhileParsingRepeatedJsr {
         pb = ProcessTools.createJavaProcessBuilder(
             "-cp", ".",
             "-XX:+UnlockDiagnosticVMOptions",
-            "-XX:ActiveProcessorCount=8",
             "-XX:MallocMaxTestWords=" + mallocMaxTestWords,
             className );
 

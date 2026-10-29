@@ -62,8 +62,8 @@ case "$OS" in
     ;;
 esac
 
-# CriticalJNINatives is not supported for aarch64 and riscv64
-if [ $VM_CPU = "aarch64" ] || [ $VM_CPU = "riscv64" ]; then
+# CriticalJNINatives is not supported for aarch64
+if [ $VM_CPU = "aarch64" ]; then
     echo "Test Passed"
     exit 0;
 fi

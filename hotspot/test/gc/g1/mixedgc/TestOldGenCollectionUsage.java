@@ -31,7 +31,7 @@
  * @build ClassFileInstaller com.oracle.java.testlibrary.* sun.hotspot.WhiteBox TestOldGenCollectionUsage
  * @run main ClassFileInstaller sun.hotspot.WhiteBox
  *                              sun.hotspot.WhiteBox$WhiteBoxPermission
- * @run main/othervm -Xbootclasspath/a:. -XX:+UseG1GC -XX:ActiveProcessorCount=8 -XX:+UnlockExperimentalVMOptions -XX:+UnlockDiagnosticVMOptions
+ * @run main/othervm -Xbootclasspath/a:. -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UnlockDiagnosticVMOptions
  *                   -XX:+WhiteBoxAPI -verbose:gc -XX:SurvivorRatio=1 -Xmx14m -Xms14m -XX:MaxTenuringThreshold=1
  *                   -XX:InitiatingHeapOccupancyPercent=100 -XX:G1MixedGCCountTarget=4 -XX:MaxGCPauseMillis=30000
  *                   -XX:G1HeapRegionSize=1m -XX:G1HeapWastePercent=0 -XX:G1MixedGCLiveThresholdPercent=100
