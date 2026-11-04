@@ -384,6 +384,14 @@ define SetupNativeCompilation
     $$(error Unknown value for OPTIMIZATION: $$($1_OPTIMIZATION))
   endif
 
+  # JDK 8's C sources predate C23: in C23 an empty parameter list () means
+  # "no arguments" (not "unspecified arguments") and bool/true/false are
+  # keywords. GCC 15+ defaults C to gnu23, so pin C back to gnu17, which is
+  # what older GCCs used by default. This is added after
+  # $1_EXTRA_CXXFLAGS was copied from $1_EXTRA_CFLAGS, so C++ builds (which
+  # keep their own -std=gnu++98) are unaffected.
+  $1_EXTRA_CFLAGS += -std=gnu17
+
   # Add sys root specific cflags last
   $1_EXTRA_CFLAGS += $(SYSROOT_CFLAGS)
   $1_EXTRA_CXXFLAGS += $(SYSROOT_CFLAGS)

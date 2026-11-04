@@ -238,6 +238,23 @@ ifeq ($(USE_FORMAT_OVERFLOW), 1)
   CFLAGS_WARN/os_linux.o = $(CFLAGS_WARN/DEFAULT) -Wno-error=format-overflow
 endif
 
+# GCC 13+ emits false-positive warnings that become errors under -Werror
+# (the default) in the Zero (cpp interpreter) cross build:
+#   -Wnonnull        compiledStaticCall_at() is an inline cast of an address,
+#                   which the compiler cannot prove non-null.
+#   -Wstringop-overflow  the Zero atomics use __sync builtins that the
+#                   compiler misanalyses as writing into a zero-sized region.
+# Suppress these per file so the build succeeds.
+ifeq ($(USE_CLANG),)
+  CFLAGS_WARN/compiledIC.o    = $(CFLAGS_WARN/DEFAULT) -Wno-nonnull
+  CFLAGS_WARN/sharedRuntime.o = $(CFLAGS_WARN/DEFAULT) -Wno-nonnull
+  CFLAGS_WARN/nmethod.o       = $(CFLAGS_WARN/DEFAULT) -Wno-nonnull
+  CFLAGS_WARN/method.o        = $(CFLAGS_WARN/DEFAULT) -Wno-stringop-overflow
+  CFLAGS_WARN/thread.o        = $(CFLAGS_WARN/DEFAULT) -Wno-stringop-overflow
+  CFLAGS_WARN/jni.o           = $(CFLAGS_WARN/DEFAULT) -Wno-stringop-overflow
+  CFLAGS_WARN/compileBroker.o = $(CFLAGS_WARN/DEFAULT) -Wno-stringop-overflow
+endif
+
 # The flags to use for an Optimized g++ build
 OPT_CFLAGS/SIZE=-Os
 OPT_CFLAGS/SPEED=-O3
