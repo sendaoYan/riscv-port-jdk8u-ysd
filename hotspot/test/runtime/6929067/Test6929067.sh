@@ -91,6 +91,11 @@ case "$ARCH" in
       ARCH=aarch64
     fi
     ;;
+  riscv64)
+    # 64-bit RISC-V machine: compiler does not recognise -m64
+    COMP_FLAG=""
+    ARCH=riscv64
+    ;;
   i586)
     ARCH=i386
     ;;
@@ -128,7 +133,7 @@ echo "VM type: ${VMTYPE}"
 $gcc_cmd -DLINUX ${COMP_FLAG} -o invoke \
     -I${COMPILEJAVA}/include -I${COMPILEJAVA}/include/linux \
     -L${COMPILEJAVA}/jre/lib/${ARCH}/${VMTYPE} \
-    -ljvm -lpthread invoke.c
+    invoke.c -ljvm -lpthread
 
 ./invoke
 exit $?
