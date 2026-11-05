@@ -51,12 +51,7 @@ case "$OS" in
         echo "WARNING: gcc not found. Cannot execute test." 2>&1
         exit 0;
     fi
-    if [ "$VM_BITS" = "64" ]
-    then
-        MY_LD_PRELOAD=${TESTJAVA}${FS}jre${FS}lib${FS}amd64${FS}libjsig.so
-    else
-        MY_LD_PRELOAD=${TESTJAVA}${FS}jre${FS}lib${FS}i386${FS}libjsig.so
-    fi
+    MY_LD_PRELOAD=${TESTJAVA}${FS}jre${FS}lib${FS}${VM_CPU}${FS}libjsig.so
     echo MY_LD_PRELOAD = ${MY_LD_PRELOAD}
     ;;
   *)

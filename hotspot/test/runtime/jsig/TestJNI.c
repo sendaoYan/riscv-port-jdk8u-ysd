@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL Java_TestJNI_doSomething(JNIEnv *env, jclass klass, jint 
     act.sa_flags = SA_ONSTACK|SA_RESTART|SA_SIGINFO;
     sigfillset(&act.sa_mask);
     act.sa_handler = SIG_DFL;
-    act.sa_sigaction = (void (*)())sig_handler;
+    act.sa_sigaction = (void (*)(int, siginfo_t *, void *))sig_handler;
     sigaction(0x20+val, &act, &oact);
 
     printf( " doSomething(%d) " , val);
