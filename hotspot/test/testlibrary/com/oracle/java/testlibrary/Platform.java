@@ -126,6 +126,9 @@ public class Platform {
         return isArch("aarch64");
     }
 
+    public static boolean isRISCV64() {
+        return isArch("riscv64");
+    }
     private static boolean isArch(String archnameRE) {
         return Pattern.compile(archnameRE, Pattern.CASE_INSENSITIVE)
             .matcher(osArch)
