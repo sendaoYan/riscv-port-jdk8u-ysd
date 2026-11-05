@@ -43,6 +43,7 @@ floobydust (void *p) {
   env->CallStaticVoidMethod(class_id, method_id, NULL);
 
   jvm->DetachCurrentThread();
+  return NULL;
 }
 
 int

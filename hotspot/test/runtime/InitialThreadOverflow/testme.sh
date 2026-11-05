@@ -64,7 +64,7 @@ cp ${TESTCLASSES}${FS}DoOverflow.class .
 $gcc_cmd -DLINUX ${CFLAGBITS} -o invoke \
     -I${COMPILEJAVA}/include -I${COMPILEJAVA}/include/linux \
     -L${COMPILEJAVA}/jre/lib/${VM_CPU}/${VM_TYPE} \
-    -ljvm -lpthread invoke.cxx
+    invoke.cxx -ljvm -lpthread
 
 ./invoke
 exit $?
