@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2012, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -45,7 +45,7 @@ class ciMetadata: public ciBaseObject {
   ciMetadata(): _metadata(NULL) {}
   ciMetadata(Metadata* o): _metadata(o) {}
 
-  virtual bool is_classless() const         { return false; }
+  virtual bool is_classless() const;
  public:
   bool is_loaded() const { return _metadata != NULL || is_classless(); }
 
