@@ -104,6 +104,11 @@ public class Platform {
         return isArch("sparc.*");
     }
 
+    // Returns true for s390 and s390x.
+    public static boolean isS390x() {
+        return isArch("s390.*");
+    }
+
     public static boolean isARM() {
         return isArch("arm.*");
     }
